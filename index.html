@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SMM Dashboard · neo-pdtr</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --border: #E8E4DC;
+  --text: #1A1A1A;
+  --muted: #888888;
+  --hint: #AAAAAA;
+  --accent: #1A1A1A;
+  --accent-fg: #F5F0E8;
+  --mono: 'Courier New', monospace;
+  --serif: 'Georgia', serif;
+  --radius: 4px;
+}
+
+body {
+  font-family: var(--serif);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+.header {
+  background: #1A1A1A;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.header-title { color: #F5F0E8; font-size: 16px; font-weight: 500; letter-spacing: -0.02em; }
+.header-sub { color: #666; font-size: 11px; font-family: var(--mono); margin-top: 2px; }
+.header-status { font-size: 11px; color: #4A8B3F; font-family: var(--mono); text-align: right; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.stat { padding: 12px 8px; text-align: center; border-right: 1px solid var(--border); }
+.stat:last-child { border-right: none; }
+.stat-num { font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; }
+.stat-label { font-size: 9px; color: var(--muted); margin-top: 3px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.toolbar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+.toolbar::-webkit-scrollbar { display: none; }
+
+.filter-btn {
+  display: inline-block;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-family: var(--mono);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-right: 6px;
+  letter-spacing: 0.02em;
+  transition: all 0.1s;
+}
+.filter-btn.active {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+
+.list { padding: 12px 16px; padding-bottom: 80px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.1s;
+  -webkit-user-select: none;
+}
+.card.selected { border-color: var(--accent); background: #F5F2EC; }
+.card:active { opacity: 0.85; }
+
+.card-meta { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 7px; }
+.badge {
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  letter-spacing: 0.03em;
+}
+.badge-high { background: #FAECE7; color: #993C1D; }
+.badge-medium { background: #FAEEDA; color: #854F0B; }
+.badge-new { background: #E1F5EE; color: #0F6E56; }
+.badge-work { background: #EEEDFE; color: #534AB7; }
+.badge-done { background: #EAF3DE; color: #3B6D11; }
+.badge-channel { background: #F1EFE8; color: #5F5E5A; }
+
+.card-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 5px; }
+.card-seo { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.card-reason { font-size: 11px; color: var(--hint); margin-top: 3px; }
+
+.card-actions { display: flex; justify-content: flex-end; margin-top: 10px; gap: 6px; }
+.btn {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-family: var(--mono);
+  border-radius: var(--radius);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+.btn:active { opacity: 0.7; transform: scale(0.97); }
+
+.panel {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  padding: 20px 20px 40px;
+  z-index: 100;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.1);
+}
+.panel.open { transform: translateY(0); }
+
+.panel-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.panel-title { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 12px; }
+.panel-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.panel-label { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.panel-value { font-size: 11px; color: var(--text); font-family: var(--mono); text-align: right; max-width: 60%; }
+
+.panel-section { margin-top: 16px; }
+.panel-section-title {
+  font-size: 10px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.status-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.plan-box {
+  background: #F5F0E8;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #333;
+  font-family: var(--mono);
+  white-space: pre-wrap;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 90;
+  display: none;
+}
+.overlay.show { display: block; }
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.loading-dot { animation: blink 1s infinite; }
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100% { opacity: 0.2; } 40% { opacity: 1; } }
+
+.empty { text-align: center; padding: 48px 20px; color: var(--hint); font-family: var(--mono); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">SMM Dashboard</div>
+    <div class="header-sub">neo-pdtr.ru · AI темы</div>
+  </div>
+  <div class="header-status">● Активна</div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num" id="stat-total">10</div><div class="stat-label">Всего</div></div>
+  <div class="stat"><div class="stat-num" id="stat-high">5</div><div class="stat-label">Срочных</div></div>
+  <div class="stat"><div class="stat-num" id="stat-work">1</div><div class="stat-label">В работе</div></div>
+  <div class="stat"><div class="stat-num" id="stat-done">2</div><div class="stat-label">Готово</div></div>
+</div>
+
+<div class="toolbar">
+  <button class="filter-btn active" onclick="setFilter('ALL', this)">Все</button>
+  <button class="filter-btn" onclick="setFilter('HIGH', this)">🔴 Срочные</button>
+  <button class="filter-btn" onclick="setFilter('MEDIUM', this)">🟡 Обычные</button>
+  <button class="filter-btn" onclick="setFilter('WORK', this)">⚡ В работе</button>
+  <button class="filter-btn" onclick="setFilter('DONE', this)">✓ Готово</button>
+</div>
+
+<div class="list" id="list"></div>
+
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+<div class="panel" id="panel">
+  <div class="panel-handle"></div>
+  <div id="panel-content"></div>
+</div>
+
+<script>
+if (window.Telegram?.WebApp) {
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
+
+const topics = [
+  { id:1, title:"Боль между лопаток от компьютера: убрать за 2 сеанса P-DTR", channel:"Анатомия Движения", audience:"Офисники", seo:"боль между лопаток причина", priority:"HIGH", reason:"Массовый запрос, слабые конкуренты", status:"Новая", date:"31.05.2026" },
+  { id:2, title:"Почему немеют пальцы рук ночью: причина которую упускают неврологи", channel:"Анатомия Движения", audience:"Офисники", seo:"немеют пальцы рук причина", priority:"HIGH", reason:"Высокая частотность, вирусный паттерн", status:"Новая", date:"31.05.2026" },
+  { id:3, title:"Бруксизм: почему стоматолог не поможет и при чём тут P-DTR", channel:"Нейро-Биомеханика", audience:"Психосоматика", seo:"бруксизм лечение последствий", priority:"HIGH", reason:"Нишевой запрос, нет конкурентов", status:"В работе", date:"31.05.2026" },
+  { id:4, title:"Шум в ушах: дисфункция челюсти как главная причина тиннитуса", channel:"Нейро-Биомеханика", audience:"55+", seo:"лечение тиннитуса p-dtr", priority:"HIGH", reason:"Уникальный угол, высокий коммерческий потенциал", status:"Новая", date:"31.05.2026" },
+  { id:5, title:"Восстановление после кесарева: как P-DTR убирает боль в тазу", channel:"Без боли рядом", audience:"Молодые мамы", seo:"восстановление после кесарева боль", priority:"HIGH", reason:"Аудитория готова платить, мало конкурентов", status:"Опубликовано", date:"30.05.2026" },
+  { id:6, title:"Коррекция осанки у взрослых: почему тренажёрный зал не помогает", channel:"Анатомия Движения", audience:"Офисники", seo:"коррекция осанки у взрослых", priority:"MEDIUM", reason:"Коммерческий запрос, перехват трафика клиник", status:"Новая", date:"31.05.2026" },
+  { id:7, title:"Как убрать боль в колене при ходьбе без операции", channel:"Здоровье Суставов", audience:"55+", seo:"убрать боль в колене при ходьбе", priority:"MEDIUM", reason:"Высокая частотность по Wordstat", status:"Новая", date:"31.05.2026" },
+  { id:8, title:"Хроническая усталость — это не лень: причина в нервной системе", channel:"Психосоматика", audience:"Психосоматика", seo:"хроническая усталость причина", priority:"MEDIUM", reason:"Тренд растёт в Google Trends", status:"Опубликовано", date:"29.05.2026" },
+  { id:9, title:"Почему боль возвращается после мануального терапевта", channel:"Анатомия Движения", audience:"Офисники", seo:"почему боль возвращается после массажа", priority:"MEDIUM", reason:"Перехват недовольных клиентов конкурентов", status:"Новая", date:"31.05.2026" },
+  { id:10, title:"Плоскостопие у взрослых: как оно вызывает боль в спине и коленях", channel:"Здоровье Суставов", audience:"Все", seo:"плоскостопие боль в спине", priority:"MEDIUM", reason:"Неочевидная связь — высокий viral score", status:"Новая", date:"31.05.2026" },
+];
+
+let currentFilter = 'ALL';
+let selectedId = null;
+
+const PRIORITY = { HIGH: {cls:'badge-high', label:'Срочно'}, MEDIUM: {cls:'badge-medium', label:'Обычное'} };
+const STATUS = { 'Новая':{cls:'badge-new'}, 'В работе':{cls:'badge-work'}, 'Опубликовано':{cls:'badge-done'} };
+
+function getFiltered() {
+  return topics.filter(t => {
+    if (currentFilter === 'HIGH') return t.priority === 'HIGH' && t.status !== 'Опубликовано';
+    if (currentFilter === 'MEDIUM') return t.priority === 'MEDIUM' && t.status !== 'Опубликовано';
+    if (currentFilter === 'WORK') return t.status === 'В работе';
+    if (currentFilter === 'DONE') return t.status === 'Опубликовано';
+    return true;
+  });
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = topics.length;
+  document.getElementById('stat-high').textContent = topics.filter(t => t.priority === 'HIGH' && t.status === 'Новая').length;
+  document.getElementById('stat-work').textContent = topics.filter(t => t.status === 'В работе').length;
+  document.getElementById('stat-done').textContent = topics.filter(t => t.status === 'Опубликовано').length;
+}
+
+function render() {
+  const list = document.getElementById('list');
+  const filtered = getFiltered();
+  if (!filtered.length) { list.innerHTML = '<div class="empty">Нет тем по фильтру</div>'; return; }
+  list.innerHTML = filtered.map(t => `
+    <div class="card${selectedId === t.id ? ' selected' : ''}" onclick="openPanel(${t.id})">
+      <div class="card-meta">
+        <span class="badge ${PRIORITY[t.priority].cls}">${PRIORITY[t.priority].label}</span>
+        <span class="badge ${STATUS[t.status].cls}">${t.status}</span>
+        <span class="badge badge-channel">${t.channel}</span>
+      </div>
+      <div class="card-title">${t.title}</div>
+      <div class="card-seo">🔍 ${t.seo}</div>
+      <div class="card-reason">${t.reason}</div>
+      <div class="card-actions" onclick="event.stopPropagation()">
+        ${t.status === 'Новая' ? `<button class="btn btn-primary" onclick="setStatus(${t.id},'В работе')">Взять →</button>` : ''}
+        ${t.status === 'В работе' ? `<button class="btn btn-primary" onclick="setStatus(${t.id},'Опубликовано')">Готово ✓</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function setStatus(id, status) {
+  const t = topics.find(t => t.id === id);
+  if (t) { t.status = status; updateStats(); render(); if (selectedId === id) openPanel(id); }
+  if (window.Telegram?.WebApp) Telegram.WebApp.HapticFeedback.impactOccurred('light');
+}
+
+function openPanel(id) {
+  selectedId = id;
+  const t = topics.find(t => t.id === id);
+  render();
+  const content = document.getElementById('panel-content');
+  content.innerHTML = `
+    <div class="panel-title">${t.title}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="badge ${PRIORITY[t.priority].cls}">${PRIORITY[t.priority].label}</span>
+      <span class="badge ${STATUS[t.status].cls}">${t.status}</span>
+    </div>
+    <div class="panel-row"><span class="panel-label">Канал</span><span class="panel-value">${t.channel}</span></div>
+    <div class="panel-row"><span class="panel-label">Аудитория</span><span class="panel-value">${t.audience}</span></div>
+    <div class="panel-row"><span class="panel-label">SEO-ключ</span><span class="panel-value">${t.seo}</span></div>
+    <div class="panel-row"><span class="panel-label">Почему зайдёт</span><span class="panel-value">${t.reason}</span></div>
+    <div class="panel-row" style="border:none"><span class="panel-label">Дата</span><span class="panel-value">${t.date}</span></div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Изменить статус</div>
+      <div class="status-btns">
+        ${['Новая','В работе','Опубликовано'].map(s => `
+          <button class="btn${t.status === s ? ' btn-primary' : ''}" onclick="setStatus(${t.id},'${s}')">${s}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">AI план статьи</div>
+      <button class="btn btn-primary" style="width:100%;padding:10px;font-size:12px" onclick="generatePlan(${t.id})">
+        ⚡ Сгенерировать план
+      </button>
+      <div id="plan-result"></div>
+    </div>
+  `;
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closePanel() {
+  selectedId = null;
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  render();
+}
+
+async function generatePlan(id) {
+  const t = topics.find(t => t.id === id);
+  const result = document.getElementById('plan-result');
+  result.innerHTML = '<div class="plan-box"><span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span> генерирую</div>';
+  if (window.Telegram?.WebApp) Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: `Краткий план статьи для Яндекс Дзен.\nТема: "${t.title}"\nSEO-ключ: "${t.seo}"\nАудитория: ${t.audience}\n\nДай: 3 варианта H2, структуру 4 блоков, призыв к действию, промпт для картинки.\nФормат: чистый текст.` }]
+      })
+    });
+    const data = await res.json();
+    result.innerHTML = `<div class="plan-box">${data.content?.[0]?.text || 'Ошибка'}</div>`;
+  } catch(e) {
+    result.innerHTML = '<div class="plan-box">Ошибка соединения</div>';
+  }
+}
+
+updateStats();
+render();
+</script>
+</body>
+</html>
