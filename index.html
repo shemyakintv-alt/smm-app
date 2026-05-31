@@ -301,17 +301,19 @@ async function loadTasks() {
   try {
     const res = await fetch(WEBHOOK_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    const buf = await res.arrayBuffer();
+    const text = new TextDecoder("utf-8").decode(buf);
+    const data = JSON.parse(text);
     tasks = data.map((t, i) => ({
-      id: t.ID || t.id || i + 1,
-      type: (t['Тип'] || t.type || 'social').toLowerCase(),
-      title: t['Заголовок'] || t.title || '(без названия)',
-      urgent: t['Срочно'] === 'да' || t['Срочно'] === true || t.urgent === 'да' || t.urgent === true,
-      status: (t['Статус'] || t.status || 'queue').toLowerCase(),
-      channels: t['Канал'] || t.channels || '',
-      audience: t['Аудитория'] || t.audience || 'Все',
-      seoKey: t['SEO-ключ'] || t.seoKey || '',
-      why: t['Почему важно'] || t.why || ''
+      id: t['0'] || t.ID || t.id || i + 1,
+      type: (t['2'] || t['Тип'] || t.type || 'social').toLowerCase(),
+      title: t['1'] || t['Заголовок'] || t.title || '(без названия)',
+      urgent: t['6'] === 'да' || t['Срочно'] === 'да' || t.urgent === 'да' || t.urgent === true,
+      status: (t['3'] || t['Статус'] || t.status || 'queue').toLowerCase(),
+      channels: t['4'] || t['Канал'] || t.channels || '',
+      audience: t['5'] || t['Аудитория'] || t.audience || 'Все',
+      seoKey: t['7'] || t['SEO-ключ'] || t.seoKey || '',
+      why: t['8'] || t['Почему важно'] || t.why || ''
     }));
     render();
     updateStats();
