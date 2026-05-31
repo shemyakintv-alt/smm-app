@@ -1,1257 +1,417 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SMM Dashboard · neo-pdtr.ru</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMM Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-
-  :root {
-    --font: 'Manrope', sans-serif;
-    --radius: 16px;
-    --radius-sm: 10px;
-  }
-
-  [data-theme="dark"] {
-    --bg: #0D1B2A;
-    --bg2: #152236;
-    --bg3: #1C2E45;
-    --card: #1a2d42;
-    --card2: #213450;
-    --border: rgba(91,155,213,0.15);
-    --accent: #5B9BD5;
-    --accent2: #3a7bbf;
-    --text: #E8F0F8;
-    --text2: #8BAAC8;
-    --text3: #5B7A9A;
-    --green: #4CAF7D;
-    --orange: #F5A623;
-    --red: #E05555;
-    --badge-auto: rgba(91,155,213,0.15);
-    --badge-auto-text: #5B9BD5;
-    --shadow: 0 4px 24px rgba(0,0,0,0.4);
-    --header-bg: linear-gradient(135deg, #0D1B2A 0%, #152236 100%);
-    --toggle-bg: #152236;
-    --toggle-knob: #5B9BD5;
-    --stat-bg: rgba(91,155,213,0.08);
-  }
-
-  [data-theme="light"] {
-    --bg: #F0F4F8;
-    --bg2: #E2EAF4;
-    --bg3: #D5E2EF;
-    --card: #FFFFFF;
-    --card2: #F7FAFD;
-    --border: rgba(91,155,213,0.2);
-    --accent: #2D72B8;
-    --accent2: #1a5a9e;
-    --text: #0D1B2A;
-    --text2: #3A5A7A;
-    --text3: #7A9AB8;
-    --green: #2E9E5E;
-    --orange: #D4880A;
-    --red: #C43A3A;
-    --badge-auto: rgba(45,114,184,0.1);
-    --badge-auto-text: #2D72B8;
-    --shadow: 0 4px 24px rgba(13,27,42,0.1);
-    --header-bg: linear-gradient(135deg, #E2EAF4 0%, #D5E2EF 100%);
-    --toggle-bg: #D5E2EF;
-    --toggle-knob: #2D72B8;
-    --stat-bg: rgba(45,114,184,0.08);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  html, body {
-    width: 100%;
-    height: 100%;
-  }
-
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100%;
-    overflow-x: hidden;
-    transition: background 0.3s, color 0.3s;
-  }
-
-  /* HEADER */
-  .header {
-    background: var(--header-bg);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 16px 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    transition: background 0.3s;
-  }
-
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo-icon {
-    width: 34px;
-    height: 34px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -0.5px;
-  }
-
-  .logo-text {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.1;
-  }
-
-  .logo-sub {
-    font-size: 11px;
-    color: var(--text2);
-    font-weight: 500;
-  }
-
-  /* THEME TOGGLE */
-  .theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 20px;
-    background: var(--toggle-bg);
-    border: 1px solid var(--border);
-    transition: all 0.2s;
-    user-select: none;
-  }
-
-  .theme-toggle:active { transform: scale(0.95); }
-
-  .toggle-icon { font-size: 14px; }
-
-  .toggle-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
-  }
-
-  /* STATS */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-  }
-
-  .stat {
-    background: var(--stat-bg);
-    border-radius: var(--radius-sm);
-    padding: 8px 6px;
-    text-align: center;
-    border: 1px solid var(--border);
-  }
-
-  .stat-num {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--accent);
-    line-height: 1;
-  }
-
-  .stat-num.orange { color: var(--orange); }
-  .stat-num.blue { color: var(--accent); }
-  .stat-num.green { color: var(--green); }
-
-  .stat-label {
-    font-size: 9px;
-    color: var(--text3);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-  }
-
-  /* TABS */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    padding: 10px 16px 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-    background: var(--bg);
-    position: sticky;
-    top: var(--header-height, 0px);
-    z-index: 90;
-  }
-
-  .tabs::-webkit-scrollbar { display: none; }
-
-  .tab {
-    flex-shrink: 0;
-    padding: 8px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text3);
-    background: var(--bg2);
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .tab.active {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-
-  .tab:active { transform: scale(0.96); }
-
-  /* CONTENT */
-  .content { padding: 12px 16px 80px; }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  /* FILTERS */
-  .filters {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 12px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-  }
-
-  .filters::-webkit-scrollbar { display: none; }
-
-  .filter-btn {
-    flex-shrink: 0;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .filter-btn.active {
-    background: var(--card2);
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-
-  /* KANBAN */
-  .kanban { display: flex; flex-direction: column; gap: 16px; }
-
-  .kanban-col {}
-
-  .kanban-title {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text3);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .kanban-count {
-    background: var(--bg3);
-    color: var(--text2);
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 10px;
-  }
-
-  /* TASK CARD */
-  .task-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    transition: all 0.2s;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .task-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--accent);
-    border-radius: 3px 0 0 3px;
-  }
-
-  .task-card.urgent::before { background: var(--red); }
-  .task-card.done::before { background: var(--green); }
-  .task-card:active { transform: scale(0.98); }
-
-  .card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .card-type {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .badge {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    flex-shrink: 0;
-  }
-
-  .badge-auto { background: var(--badge-auto); color: var(--badge-auto-text); }
-  .badge-urgent { background: rgba(224,85,85,0.15); color: var(--red); }
-  .badge-done { background: rgba(76,175,125,0.15); color: var(--green); }
-  .badge-inwork { background: rgba(245,166,35,0.15); color: var(--orange); }
-
-  .card-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.3;
-    margin-bottom: 8px;
-  }
-
-  .card-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
-  }
-
-  .meta-tag {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text2);
-    background: var(--bg2);
-    padding: 3px 8px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-
-  .card-actions {
-    display: flex;
-    gap: 6px;
-  }
-
-  .btn {
-    flex: 1;
-    padding: 9px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: var(--font);
-  }
-
-  .btn:active { transform: scale(0.96); }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-  }
-
-  .btn-secondary {
-    background: var(--bg2);
-    color: var(--text2);
-    border: 1px solid var(--border);
-  }
-
-  .btn-success {
-    background: rgba(76,175,125,0.15);
-    color: var(--green);
-    border: 1px solid rgba(76,175,125,0.2);
-  }
-
-  /* THEMES ROW */
-  .theme-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .theme-card:active { transform: scale(0.98); }
-
-  .theme-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .priority-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-top: 4px;
-    flex-shrink: 0;
-  }
-
-  .priority-high { background: var(--red); box-shadow: 0 0 6px var(--red); }
-  .priority-med { background: var(--orange); }
-  .priority-low { background: var(--green); }
-
-  .theme-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.3;
-    margin-bottom: 5px;
-  }
-
-  .theme-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 8px;
-  }
-
-  /* WEEK */
-  .week-day {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border);
-  }
-
-  .week-day-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-
-  .week-day-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .week-day-date {
-    font-size: 11px;
-    color: var(--text3);
-  }
-
-  .week-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .week-item:last-child { border-bottom: none; }
-
-  .week-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .week-item-text { font-size: 12px; color: var(--text2); font-weight: 500; }
-  .week-item-badge { margin-left: auto; }
-
-  /* AI HELP */
-  .ai-section { margin-bottom: 16px; }
-
-  .ai-section-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-  }
-
-  .ai-btn-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .ai-btn {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-    font-family: var(--font);
-  }
-
-  .ai-btn:active { transform: scale(0.96); background: var(--card2); }
-
-  .ai-btn-icon { font-size: 22px; margin-bottom: 6px; }
-
-  .ai-btn-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 2px;
-  }
-
-  .ai-btn-desc { font-size: 10px; color: var(--text3); font-weight: 500; }
-
-  /* AI RESULT */
-  .ai-result {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 14px;
-    border: 1px solid var(--border);
-    margin-top: 12px;
-    display: none;
-  }
-
-  .ai-result.show { display: block; }
-
-  .ai-result-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-  }
-
-  .ai-result-text {
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.6;
-    white-space: pre-wrap;
-  }
-
-  .ai-loading {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text3);
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--bg2);
-    border-top: 1px solid var(--border);
-    display: flex;
-    z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom);
-    transition: background 0.3s;
-  }
-
-  .nav-item {
-    flex: 1;
-    padding: 10px 4px 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    background: none;
-    font-family: var(--font);
-  }
-
-  .nav-item:active { transform: scale(0.92); }
-
-  .nav-icon { font-size: 20px; }
-
-  .nav-label {
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
-  .nav-item.active .nav-label { color: var(--accent); }
-  .nav-item.active .nav-icon { filter: drop-shadow(0 0 4px var(--accent)); }
-
-  /* DETAIL SHEET */
-  .sheet-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 200;
-    display: none;
-    backdrop-filter: blur(4px);
-  }
-
-  .sheet-overlay.show { display: flex; align-items: flex-end; }
-
-  .sheet {
-    background: var(--bg2);
-    border-radius: 20px 20px 0 0;
-    padding: 0 16px 32px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    animation: slideUp 0.3s ease;
-    border-top: 1px solid var(--border);
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-  }
-
-  .sheet-handle {
-    width: 36px;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin: 12px auto 16px;
-  }
-
-  .sheet-title {
-    font-size: 17px;
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .sheet-sub {
-    font-size: 12px;
-    color: var(--text3);
-    margin-bottom: 16px;
-  }
-
-  .sheet-section {
-    background: var(--card);
-    border-radius: var(--radius-sm);
-    padding: 12px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border);
-  }
-
-  .sheet-section-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .sheet-section-value {
-    font-size: 13px;
-    color: var(--text);
-    font-weight: 500;
-    line-height: 1.5;
-  }
-
-  .sheet-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .btn-close {
-    background: var(--bg3);
-    color: var(--text2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: var(--font);
-    transition: all 0.2s;
-  }
-
-  .btn-close:active { transform: scale(0.96); }
+:root {
+  --bg: #0f0f13;
+  --bg2: #1a1a24;
+  --bg3: #22222f;
+  --border: #2e2e3e;
+  --text: #f0f0f8;
+  --text2: #a0a0b8;
+  --text3: #606078;
+  --accent: #7c6cfc;
+  --accent2: #5a4de0;
+  --green: #3ecf8e;
+  --yellow: #f5c542;
+  --red: #f56060;
+  --blue: #4da6ff;
+}
+.light {
+  --bg: #f4f6fb;
+  --bg2: #ffffff;
+  --bg3: #eaedf5;
+  --border: #d0d5e8;
+  --text: #1a1a2e;
+  --text2: #555570;
+  --text3: #9999b0;
+  --accent: #5a4de0;
+  --accent2: #7c6cfc;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+/* HEADER */
+.header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.header-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.theme-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text);
+}
+
+/* STATS */
+.stats {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.stat {
+  background: var(--bg3);
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-width: 70px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.stat-num { font-size: 20px; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* TABS */
+.tabs {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.tab {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* BOARD */
+.board-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+}
+.columns { display: flex; gap: 10px; min-height: 100%; }
+.col {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.col-header {
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.col-header .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.col-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+
+/* CARD */
+.card {
+  background: var(--bg3);
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.card:active { border-color: var(--accent); }
+.card-title { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.card-meta { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 3px; }
+.badge {
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.badge-urgent { background: #f560601a; color: var(--red); }
+.badge-auto { background: #4da6ff1a; color: var(--blue); }
+.badge-case { background: #3ecf8e1a; color: var(--green); }
+.badge-social { background: #7c6cfc1a; color: var(--accent); }
+.badge-channel { background: var(--bg2); color: var(--text3); }
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: #0008;
+  z-index: 100;
+  align-items: flex-end;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2);
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  padding: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 12px; }
+.modal-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.modal-row { margin-bottom: 8px; }
+.modal-row label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+.modal-row p { font-size: 13px; color: var(--text); margin-top: 2px; }
+.status-btns { display: flex; gap: 6px; margin-top: 6px; }
+.status-btn {
+  flex: 1;
+  padding: 7px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.status-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* LOADING / ERROR */
+.msg-center {
+  padding: 30px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.msg-center.error { color: var(--red); }
 </style>
 </head>
 <body>
+<div id="app">
+  <div class="header">
+    <div>
+      <div class="header-title">📊 SMM Dashboard</div>
+      <div class="header-sub">P-DTR · Контент-план</div>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  </div>
 
-<div class="header">
-  <div class="header-top">
-    <div class="logo">
-      <div class="logo-icon">P</div>
-      <div>
-        <div class="logo-text">SMM Dashboard</div>
-        <div class="logo-sub">neo-pdtr.ru</div>
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-num" id="s-total">—</div><div class="stat-label">Всего</div></div>
+    <div class="stat"><div class="stat-num" id="s-queue" style="color:var(--yellow)">—</div><div class="stat-label">Очередь</div></div>
+    <div class="stat"><div class="stat-num" id="s-work" style="color:var(--blue)">—</div><div class="stat-label">В работе</div></div>
+    <div class="stat"><div class="stat-num" id="s-done" style="color:var(--green)">—</div><div class="stat-label">Готово</div></div>
+    <div class="stat"><div class="stat-num" id="s-urgent" style="color:var(--red)">—</div><div class="stat-label">Срочно</div></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" onclick="filterTasks('all',this)">Все</div>
+    <div class="tab" onclick="filterTasks('case',this)">Кейсы</div>
+    <div class="tab" onclick="filterTasks('social',this)">Соцсети</div>
+    <div class="tab" onclick="filterTasks('auto',this)">Автопост</div>
+    <div class="tab" onclick="filterTasks('urgent',this)">🔴 Срочно</div>
+  </div>
+
+  <div class="board-wrap">
+    <div class="columns">
+      <div class="col">
+        <div class="col-header" style="color:var(--yellow)">
+          <div class="dot" style="background:var(--yellow)"></div>Очередь
+        </div>
+        <div class="col-body" id="col-queue"></div>
+      </div>
+      <div class="col">
+        <div class="col-header" style="color:var(--blue)">
+          <div class="dot" style="background:var(--blue)"></div>В работе
+        </div>
+        <div class="col-body" id="col-work"></div>
+      </div>
+      <div class="col">
+        <div class="col-header" style="color:var(--green)">
+          <div class="dot" style="background:var(--green)"></div>Готово
+        </div>
+        <div class="col-body" id="col-done"></div>
       </div>
     </div>
-    <div class="theme-toggle" onclick="toggleTheme()">
-      <span class="toggle-icon" id="themeIcon">☀️</span>
-      <span class="toggle-label" id="themeLabel">Светлая</span>
-    </div>
-  </div>
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-num" id="statTotal">7</div>
-      <div class="stat-label">Всего</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num orange" id="statUrgent">3</div>
-      <div class="stat-label">Срочных</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num blue" id="statWork">2</div>
-      <div class="stat-label">В работе</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num green" id="statDone">3</div>
-      <div class="stat-label">Готово</div>
-    </div>
   </div>
 </div>
 
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('tasks', this)">📋 Задачи</div>
-  <div class="tab" onclick="switchTab('themes', this)">💡 Темы</div>
-  <div class="tab" onclick="switchTab('week', this)">📅 Неделя</div>
-  <div class="tab" onclick="switchTab('ai', this)">⚡ AI Помощь</div>
-</div>
-
-<div class="content">
-
-  <!-- TASKS -->
-  <div class="tab-panel active" id="panel-tasks">
-    <div class="filters">
-      <div class="filter-btn active" onclick="filterTasks('all', this)">Все</div>
-      <div class="filter-btn" onclick="filterTasks('manual', this)">👤 Ручные</div>
-      <div class="filter-btn" onclick="filterTasks('case', this)">🎬 Кейсы</div>
-      <div class="filter-btn" onclick="filterTasks('social', this)">📱 Соцсети</div>
-      <div class="filter-btn" onclick="filterTasks('auto', this)">🤖 Авто</div>
-    </div>
-
-    <div class="kanban" id="kanban-board"></div>
-  </div>
-
-  <!-- THEMES -->
-  <div class="tab-panel" id="panel-themes">
-    <div class="filters">
-      <div class="filter-btn active">Все</div>
-      <div class="filter-btn">🔴 HIGH</div>
-      <div class="filter-btn">🟡 MED</div>
-      <div class="filter-btn">🟢 LOW</div>
-    </div>
-    <div id="themes-list"></div>
-  </div>
-
-  <!-- WEEK -->
-  <div class="tab-panel" id="panel-week">
-    <div id="week-list"></div>
-  </div>
-
-  <!-- AI HELP -->
-  <div class="tab-panel" id="panel-ai">
-    <div class="ai-section">
-      <div class="ai-section-title">Генерация текстов</div>
-      <div class="ai-btn-grid">
-        <div class="ai-btn" onclick="generateText('instagram')">
-          <div class="ai-btn-icon">📸</div>
-          <div class="ai-btn-label">Instagram</div>
-          <div class="ai-btn-desc">Пост + Stories</div>
-        </div>
-        <div class="ai-btn" onclick="generateText('telegram')">
-          <div class="ai-btn-icon">✈️</div>
-          <div class="ai-btn-label">Telegram</div>
-          <div class="ai-btn-desc">Пост в канал</div>
-        </div>
-        <div class="ai-btn" onclick="generateText('max')">
-          <div class="ai-btn-icon">🎬</div>
-          <div class="ai-btn-label">MAX</div>
-          <div class="ai-btn-desc">Описание видео</div>
-        </div>
-        <div class="ai-btn" onclick="generateText('vk')">
-          <div class="ai-btn-icon">🔵</div>
-          <div class="ai-btn-label">ВКонтакте</div>
-          <div class="ai-btn-desc">Пост с хэштегами</div>
-        </div>
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-row"><label>Тип</label><p id="m-type"></p></div>
+    <div class="modal-row"><label>Каналы</label><p id="m-channels"></p></div>
+    <div class="modal-row"><label>Аудитория</label><p id="m-audience"></p></div>
+    <div class="modal-row"><label>SEO-ключ</label><p id="m-seo"></p></div>
+    <div class="modal-row"><label>Почему важно</label><p id="m-why"></p></div>
+    <div class="modal-row">
+      <label>Статус</label>
+      <div class="status-btns">
+        <div class="status-btn" id="sb-queue" onclick="setStatus('queue')">📋 Очередь</div>
+        <div class="status-btn" id="sb-work" onclick="setStatus('work')">⚡ В работе</div>
+        <div class="status-btn" id="sb-done" onclick="setStatus('done')">✅ Готово</div>
       </div>
-    </div>
-
-    <div class="ai-section">
-      <div class="ai-section-title">Анализ и стратегия</div>
-      <div class="ai-btn-grid">
-        <div class="ai-btn" onclick="generateText('viral')">
-          <div class="ai-btn-icon">🔥</div>
-          <div class="ai-btn-label">Вирусные форматы</div>
-          <div class="ai-btn-desc">Топ-5 идей</div>
-        </div>
-        <div class="ai-btn" onclick="generateText('case')">
-          <div class="ai-btn-icon">🎯</div>
-          <div class="ai-btn-label">Оформить кейс</div>
-          <div class="ai-btn-desc">История клиента</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ai-result" id="ai-result">
-      <div class="ai-result-title" id="ai-result-title">Результат</div>
-      <div class="ai-result-text" id="ai-result-text"></div>
-    </div>
-  </div>
-
-</div>
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="nav-item active" onclick="switchTab('tasks', null, this)">
-    <span class="nav-icon">📋</span>
-    <span class="nav-label">Задачи</span>
-  </button>
-  <button class="nav-item" onclick="switchTab('themes', null, this)">
-    <span class="nav-icon">💡</span>
-    <span class="nav-label">Темы</span>
-  </button>
-  <button class="nav-item" onclick="switchTab('week', null, this)">
-    <span class="nav-icon">📅</span>
-    <span class="nav-label">Неделя</span>
-  </button>
-  <button class="nav-item" onclick="switchTab('ai', null, this)">
-    <span class="nav-icon">⚡</span>
-    <span class="nav-label">AI</span>
-  </button>
-</div>
-
-<!-- DETAIL SHEET -->
-<div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet(event)">
-  <div class="sheet" id="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="sheet-title"></div>
-    <div class="sheet-sub" id="sheet-sub"></div>
-    <div id="sheet-body"></div>
-    <div class="sheet-actions">
-      <button class="btn-close" onclick="closeSheetDirect()">Закрыть</button>
-      <button class="btn btn-primary" id="sheet-action-btn" onclick="sheetAction()">Взять в работу</button>
     </div>
   </div>
 </div>
 
 <script>
-window.Telegram.WebApp.ready();
-window.Telegram.WebApp.expand();
+const WEBHOOK_URL = 'https://hook.eu1.make.com/fdxhyyvvbslmzvidpe6auxh74vwf7bp0';
 
-// Адаптируем под реальный viewport
-function setViewportHeight() {
-  const h = document.querySelector(".header");
-  if (h) document.documentElement.style.setProperty("--header-height", h.offsetHeight + "px");
+// Telegram
+if (window.Telegram?.WebApp) {
+  window.Telegram.WebApp.ready();
+  window.Telegram.WebApp.expand();
 }
-setTimeout(setViewportHeight, 100);
-window.addEventListener("resize", setViewportHeight);
 
-const tg = window.Telegram.WebApp;
-
-// DATA
-const tasks = [
-  { id:1, type:'case', category:'Кейсы', title:'Кейс: пациент с защемлением нерва — 3 сеанса', urgent:true, status:'queue', channels:'📸 Instagram + ✈️ TG', audience:'Все', seoKey:'защемление нерва лечение', why:'Живые кейсы дают доверие', auto:false },
-  { id:2, type:'social', category:'Соцсети', title:'Пост в TG: почему массаж не помогает при P-DTR', urgent:false, status:'work', channels:'✈️ Telegram', audience:'Офисники', seoKey:'почему массаж не помогает', why:'Перехватываем трафик конкурентов', auto:false },
-  { id:3, type:'auto', category:'Автопост', title:'Статья: Боль между лопаток от компьютера', urgent:false, status:'done', channels:'📰 Дзен + 📌 Pinterest', audience:'Офисники', seoKey:'боль между лопаток', why:'Высокочастотный запрос 4800/мес', auto:true },
-  { id:4, type:'social', category:'Соцсети', title:'Instagram Stories: до/после коррекция осанки', urgent:true, status:'queue', channels:'📸 Instagram', audience:'Все', seoKey:'коррекция осанки результат', why:'Stories дают охват и заявки', auto:false },
-  { id:5, type:'auto', category:'Автопост', title:'Статья: Восстановление после кесарева', urgent:false, status:'done', channels:'📰 Дзен + 📌 Pinterest', audience:'Молодые мамы', seoKey:'восстановление после кесарева боль', why:'Целевая аудитория молодые мамы', auto:true },
-  { id:6, type:'case', category:'Кейсы', title:'Кейс: топ-менеджер — синдром грушевидной мышцы', urgent:true, status:'work', channels:'📸 Instagram + ✈️ TG + 🎬 MAX', audience:'ТОП-менеджеры', seoKey:'синдром грушевидной мышцы', why:'Высокий чек аудитории', auto:false },
-  { id:7, type:'auto', category:'Автопост', title:'Статья: Альтернатива мануальному терапевту', urgent:false, status:'done', channels:'📰 Дзен + 📌 Pinterest', audience:'Все', seoKey:'альтернатива мануальному терапевту', why:'Перехват запросов конкурентов', auto:true },
-];
-
-const themes = [
-  { title:'Бруксизм: почему стоматолог не может это вылечить', priority:'high', channel:'Дзен + TG', audience:'Все', seoKey:'бруксизм лечение причины', why:'Неожиданная связь → высокий viral' },
-  { title:'Шум в ушах (тиннитус) — дисфункция ВНЧС', priority:'high', channel:'Дзен', audience:'Возрастные', seoKey:'тиннитус лечение без лекарств', why:'Запрос 3200/мес, конкуренты слабые' },
-  { title:'Почему немеют пальцы рук по ночам', priority:'high', channel:'Дзен + Instagram', audience:'Офисники', seoKey:'немеют пальцы рук причина', why:'7800/мес, у конкурентов нет ответа' },
-  { title:'Плоскостопие у взрослых вызывает боль в спине', priority:'med', channel:'Дзен', audience:'Все', seoKey:'плоскостопие боль в спине', why:'Неочевидная связь, перехват трафика' },
-  { title:'Восстановление спортсмена после травмы плеча', priority:'med', channel:'Дзен + MAX', audience:'Спортсмены', seoKey:'восстановление плеча после травмы', why:'Платёжеспособная аудитория' },
-  { title:'Хроническая боль в шее: что делать если не помогает', priority:'low', channel:'Дзен', audience:'Все', seoKey:'хроническая боль в шее лечение', why:'5400/мес, стабильный трафик' },
-];
-
-const weekDays = [
-  { name:'Понедельник', date:'02.06', items:[
-    { text:'Автостатья: Дзен + Pinterest', auto:true, done:false },
-    { text:'Кейс Instagram — защемление нерва', auto:false, done:false },
-  ]},
-  { name:'Вторник', date:'03.06', items:[
-    { text:'Автостатья: Дзен + Pinterest', auto:true, done:false },
-    { text:'TG пост: почему массаж не помогает', auto:false, done:false },
-  ]},
-  { name:'Среда', date:'04.06', items:[
-    { text:'Автостатья: Дзен + Pinterest', auto:true, done:false },
-    { text:'Instagram Stories: до/после', auto:false, done:false },
-  ]},
-  { name:'Четверг', date:'05.06', items:[
-    { text:'Автостатья: Дзен + Pinterest', auto:true, done:false },
-  ]},
-  { name:'Пятница', date:'06.06', items:[
-    { text:'Автостатья: Дзен + Pinterest', auto:true, done:false },
-    { text:'Кейс MAX: топ-менеджер', auto:false, done:false },
-  ]},
-  { name:'Суббота', date:'07.06', items:[
-    { text:'Автостатья: Дзен + Pinterest', auto:true, done:false },
-  ]},
-  { name:'Воскресенье', date:'08.06', items:[
-    { text:'🤖 Запуск Аналитика (авто)', auto:true, done:false },
-    { text:'🤖 Обновление SMM топа (авто)', auto:true, done:false },
-  ]},
-];
-
+let tasks = [];
 let currentFilter = 'all';
-let activeSheet = null;
-let activeTabId = 'tasks';
-
-// RENDER TASKS
-function renderTasks(filter) {
-  const board = document.getElementById('kanban-board');
-  const cols = { queue: [], work: [], done: [] };
-  
-  tasks.forEach(t => {
-    if (filter === 'all' || 
-        (filter === 'manual' && !t.auto) ||
-        (filter === 'case' && t.type === 'case') ||
-        (filter === 'social' && t.type === 'social') ||
-        (filter === 'auto' && t.auto)) {
-      cols[t.status].push(t);
-    }
-  });
-
-  const labels = { queue:'📋 Очередь', work:'⚡ В работе', done:'✅ Готово' };
-  const statusClass = { queue:'', work:'urgent', done:'done' };
-  const badgeMap = { queue:'badge-urgent', work:'badge-inwork', done:'badge-done' };
-  const badgeText = { queue:'Срочно', work:'В работе', done:'Готово' };
-
-  board.innerHTML = Object.entries(cols).map(([status, items]) => `
-    <div class="kanban-col">
-      <div class="kanban-title">
-        ${labels[status]}
-        <span class="kanban-count">${items.length}</span>
-      </div>
-      ${items.map(t => `
-        <div class="task-card ${statusClass[status]}" onclick="openSheet(${t.id})">
-          <div class="card-header">
-            <span class="card-type">${t.category}</span>
-            <span class="badge ${t.auto ? 'badge-auto' : badgeMap[status]}">${t.auto ? 'АВТО' : badgeText[status]}</span>
-          </div>
-          <div class="card-title">${t.title}</div>
-          <div class="card-meta">
-            <span class="meta-tag">📡 ${t.channels}</span>
-            <span class="meta-tag">👥 ${t.audience}</span>
-          </div>
-          <div class="card-actions">
-            ${status !== 'done' ? `<button class="btn btn-primary" onclick="event.stopPropagation();changeStatus(${t.id},'${status === 'queue' ? 'work' : 'done'}')">
-              ${status === 'queue' ? '→ Взять' : '✓ Готово'}
-            </button>` : `<button class="btn btn-success">✓ Опубликовано</button>`}
-            <button class="btn btn-secondary" onclick="event.stopPropagation();openSheet(${t.id})">Детали</button>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-
-function changeStatus(id, newStatus) {
-  const t = tasks.find(t => t.id === id);
-  if (t) {
-    t.status = newStatus;
-    tg.HapticFeedback && tg.HapticFeedback.impactOccurred('light');
-    renderTasks(currentFilter);
-    updateStats();
-  }
-}
-
-function updateStats() {
-  document.getElementById('statTotal').textContent = tasks.length;
-  document.getElementById('statUrgent').textContent = tasks.filter(t => t.urgent && t.status !== 'done').length;
-  document.getElementById('statWork').textContent = tasks.filter(t => t.status === 'work').length;
-  document.getElementById('statDone').textContent = tasks.filter(t => t.status === 'done').length;
-}
-
-// RENDER THEMES
-function renderThemes() {
-  const list = document.getElementById('themes-list');
-  const pMap = { high:'priority-high', med:'priority-med', low:'priority-low' };
-  
-  list.innerHTML = themes.map(t => `
-    <div class="theme-card" onclick="openThemeSheet('${t.title.replace(/'/g,"\\'")}','${t.seoKey}','${t.channel}','${t.audience}','${t.why}')">
-      <div class="theme-row">
-        <div class="priority-dot ${pMap[t.priority]}"></div>
-        <div style="flex:1">
-          <div class="theme-title">${t.title}</div>
-          <div class="theme-meta">
-            <span class="meta-tag">🔑 ${t.seoKey}</span>
-            <span class="meta-tag">📡 ${t.channel}</span>
-            <span class="meta-tag">👥 ${t.audience}</span>
-          </div>
-          <div style="font-size:11px;color:var(--text3)">${t.why}</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// RENDER WEEK
-function renderWeek() {
-  const list = document.getElementById('week-list');
-  list.innerHTML = weekDays.map(d => `
-    <div class="week-day">
-      <div class="week-day-header">
-        <div class="week-day-name">${d.name}</div>
-        <div class="week-day-date">${d.date}</div>
-      </div>
-      ${d.items.map(i => `
-        <div class="week-item">
-          <div class="week-dot" style="background:${i.auto ? 'var(--accent)' : 'var(--orange)'}"></div>
-          <div class="week-item-text">${i.text}</div>
-          <span class="badge ${i.auto ? 'badge-auto' : 'badge-inwork'} week-item-badge">${i.auto ? 'АВТО' : 'ОЛЯ'}</span>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-
-// SHEET
-function openSheet(id) {
-  const t = tasks.find(t => t.id === id);
-  if (!t) return;
-  activeSheet = t;
-  
-  document.getElementById('sheet-title').textContent = t.title;
-  document.getElementById('sheet-sub').textContent = `${t.category} · ${t.audience}`;
-  
-  document.getElementById('sheet-body').innerHTML = `
-    <div class="sheet-section">
-      <div class="sheet-section-label">Каналы публикации</div>
-      <div class="sheet-section-value">${t.channels}</div>
-    </div>
-    <div class="sheet-section">
-      <div class="sheet-section-label">SEO-ключ</div>
-      <div class="sheet-section-value">${t.seoKey}</div>
-    </div>
-    <div class="sheet-section">
-      <div class="sheet-section-label">Почему эта тема важна</div>
-      <div class="sheet-section-value">${t.why}</div>
-    </div>
-    <div class="sheet-section">
-      <div class="sheet-section-label">Статус</div>
-      <div class="sheet-section-value">${t.status === 'queue' ? '📋 В очереди' : t.status === 'work' ? '⚡ В работе' : '✅ Готово'}</div>
-    </div>
-  `;
-  
-  const btn = document.getElementById('sheet-action-btn');
-  if (t.status === 'done') {
-    btn.style.display = 'none';
-  } else {
-    btn.style.display = '';
-    btn.textContent = t.status === 'queue' ? '→ Взять в работу' : '✓ Отметить готово';
-  }
-  
-  document.getElementById('sheet-overlay').classList.add('show');
-  tg.HapticFeedback && tg.HapticFeedback.selectionChanged();
-}
-
-function openThemeSheet(title, seoKey, channel, audience, why) {
-  document.getElementById('sheet-title').textContent = title;
-  document.getElementById('sheet-sub').textContent = `Тема от AI Скаута`;
-  
-  document.getElementById('sheet-body').innerHTML = `
-    <div class="sheet-section">
-      <div class="sheet-section-label">SEO-ключ</div>
-      <div class="sheet-section-value">${seoKey}</div>
-    </div>
-    <div class="sheet-section">
-      <div class="sheet-section-label">Канал</div>
-      <div class="sheet-section-value">${channel}</div>
-    </div>
-    <div class="sheet-section">
-      <div class="sheet-section-label">Аудитория</div>
-      <div class="sheet-section-value">${audience}</div>
-    </div>
-    <div class="sheet-section">
-      <div class="sheet-section-label">Почему зайдёт</div>
-      <div class="sheet-section-value">${why}</div>
-    </div>
-  `;
-  
-  const btn = document.getElementById('sheet-action-btn');
-  btn.style.display = '';
-  btn.textContent = '+ Добавить в задачи';
-  
-  document.getElementById('sheet-overlay').classList.add('show');
-}
-
-function sheetAction() {
-  if (activeSheet) {
-    const next = activeSheet.status === 'queue' ? 'work' : 'done';
-    changeStatus(activeSheet.id, next);
-    activeSheet.status = next;
-  }
-  closeSheetDirect();
-}
-
-function closeSheet(e) {
-  if (e.target === document.getElementById('sheet-overlay')) closeSheetDirect();
-}
-
-function closeSheetDirect() {
-  document.getElementById('sheet-overlay').classList.remove('show');
-  activeSheet = null;
-}
-
-// TABS
-function switchTab(id, tabEl, navEl) {
-  activeTabId = id;
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  
-  document.getElementById('panel-' + id).classList.add('active');
-  if (tabEl) tabEl.classList.add('active');
-  if (navEl) navEl.classList.add('active');
-  else {
-    const tabs = document.querySelectorAll('.tab');
-    const map = {tasks:0, themes:1, week:2, ai:3};
-    if (tabs[map[id]]) tabs[map[id]].classList.add('active');
-    const navs = document.querySelectorAll('.nav-item');
-    if (navs[map[id]]) navs[map[id]].classList.add('active');
-  }
-  
-  tg.HapticFeedback && tg.HapticFeedback.selectionChanged();
-}
-
-// FILTERS
-function filterTasks(filter, btn) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTasks(filter);
-}
-
-// THEME TOGGLE
+let activeTask = null;
 let isDark = true;
 
 function toggleTheme() {
   isDark = !isDark;
-  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
-  document.getElementById('themeLabel').textContent = isDark ? 'Светлая' : 'Тёмная';
-  tg.HapticFeedback && tg.HapticFeedback.impactOccurred('light');
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
 }
 
-// AI GENERATE
-const prompts = {
-  instagram: 'Напиши Instagram пост для студии нейромышечной коррекции P-DTR neo-pdtr.ru (Москва, м. Автозаводская). Аудитория — люди с хронической болью. Стиль: живой, без медицинских терминов. Добавь 5 хэштегов. До 150 слов.',
-  telegram: 'Напиши пост для Telegram канала студии P-DTR. Тема: как нейромышечная коррекция устраняет причину боли, а не симптом. Стиль: экспертный, но понятный. До 120 слов.',
-  max: 'Напиши описание для видео на платформе MAX про студию P-DTR neo-pdtr.ru. Тема: реальный кейс — пациент с болью в спине. Захватывающее начало, до 100 слов.',
-  vk: 'Напиши пост ВКонтакте для студии нейромышечной коррекции P-DTR. Тема: почему стандартное лечение боли не работает. До 120 слов + 7 хэштегов.',
-  viral: 'Предложи 5 вирусных форматов контента для студии P-DTR (нейромышечная коррекция, Москва). Каждый формат — название + 1 предложение почему зайдёт. Аудитория — люди с хронической болью.',
-  case: 'Помоги оформить кейс для студии P-DTR. Структура: 1) Проблема пациента (до), 2) Метод работы P-DTR, 3) Результат (после). Стиль живой, человеческий. До 150 слов.',
-};
-
-const titles = {
-  instagram: '📸 Instagram пост',
-  telegram: '✈️ Telegram пост',
-  max: '🎬 MAX описание',
-  vk: '🔵 ВКонтакте пост',
-  viral: '🔥 Вирусные форматы',
-  case: '🎯 Кейс пациента',
-};
-
-async function generateText(type) {
-  const result = document.getElementById('ai-result');
-  const title = document.getElementById('ai-result-title');
-  const text = document.getElementById('ai-result-text');
-  
-  result.classList.add('show');
-  title.textContent = titles[type];
-  text.innerHTML = '<div class="ai-loading"><div class="spinner"></div>Генерирую...</div>';
-  
-  tg.HapticFeedback && tg.HapticFeedback.impactOccurred('medium');
-  
-  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
+async function loadTasks() {
+  setLoading();
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompts[type] }]
-      })
-    });
-    const data = await response.json();
-    const content = data.content?.[0]?.text || 'Ошибка генерации';
-    text.textContent = content;
-    tg.HapticFeedback && tg.HapticFeedback.notificationOccurred('success');
+    const res = await fetch(WEBHOOK_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    tasks = data.map((t, i) => ({
+      id: t.ID || t.id || i + 1,
+      type: (t['Тип'] || t.type || 'social').toLowerCase(),
+      title: t['Заголовок'] || t.title || '(без названия)',
+      urgent: t['Срочно'] === 'да' || t['Срочно'] === true || t.urgent === 'да' || t.urgent === true,
+      status: (t['Статус'] || t.status || 'queue').toLowerCase(),
+      channels: t['Канал'] || t.channels || '',
+      audience: t['Аудитория'] || t.audience || 'Все',
+      seoKey: t['SEO-ключ'] || t.seoKey || '',
+      why: t['Почему важно'] || t.why || ''
+    }));
+    render();
+    updateStats();
   } catch(e) {
-    text.textContent = 'Ошибка соединения. Попробуй ещё раз.';
+    setError(e.message);
   }
 }
 
-// INIT
-renderTasks('all');
-renderThemes();
-renderWeek();
-updateStats();
+function setLoading() {
+  ['queue','work','done'].forEach(s => {
+    document.getElementById('col-' + s).innerHTML =
+      '<div class="msg-center">Загружаю...</div>';
+  });
+}
+
+function setError(msg) {
+  document.getElementById('col-queue').innerHTML =
+    `<div class="msg-center error">Ошибка загрузки:<br>${msg}<br><br><button onclick="loadTasks()" style="margin-top:8px;padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer">Повторить</button></div>`;
+  document.getElementById('col-work').innerHTML = '';
+  document.getElementById('col-done').innerHTML = '';
+}
+
+function getFiltered() {
+  if (currentFilter === 'urgent') return tasks.filter(t => t.urgent);
+  if (currentFilter === 'all') return tasks;
+  return tasks.filter(t => t.type === currentFilter);
+}
+
+function render() {
+  const filtered = getFiltered();
+  ['queue','work','done'].forEach(status => {
+    const col = document.getElementById('col-' + status);
+    const items = filtered.filter(t => t.status === status);
+    if (items.length === 0) {
+      col.innerHTML = '<div class="msg-center" style="font-size:11px">пусто</div>';
+      return;
+    }
+    col.innerHTML = items.map(t => cardHTML(t)).join('');
+  });
+}
+
+function cardHTML(t) {
+  const typeLabel = t.type === 'auto' ? 'Автопост' : t.type === 'case' ? 'Кейс' : 'Соцсети';
+  const typeBadge = `<span class="badge badge-${t.type}">${typeLabel}</span>`;
+  const urgentBadge = t.urgent ? `<span class="badge badge-urgent">🔴 Срочно</span>` : '';
+  const channelBadge = t.channels ? `<span class="badge badge-channel">${t.channels}</span>` : '';
+  return `<div class="card" onclick="openModal(${t.id})">
+    <div class="card-title">${t.title}</div>
+    <div class="card-meta">${typeBadge}${urgentBadge}${channelBadge}</div>
+  </div>`;
+}
+
+function updateStats() {
+  document.getElementById('s-total').textContent = tasks.length;
+  document.getElementById('s-queue').textContent = tasks.filter(t=>t.status==='queue').length;
+  document.getElementById('s-work').textContent = tasks.filter(t=>t.status==='work').length;
+  document.getElementById('s-done').textContent = tasks.filter(t=>t.status==='done').length;
+  document.getElementById('s-urgent').textContent = tasks.filter(t=>t.urgent).length;
+}
+
+function filterTasks(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function openModal(id) {
+  activeTask = tasks.find(t => t.id == id);
+  if (!activeTask) return;
+  document.getElementById('m-title').textContent = activeTask.title;
+  document.getElementById('m-type').textContent =
+    activeTask.type === 'auto' ? 'Автопост' : activeTask.type === 'case' ? 'Кейс' : 'Соцсети';
+  document.getElementById('m-channels').textContent = activeTask.channels || '—';
+  document.getElementById('m-audience').textContent = activeTask.audience || '—';
+  document.getElementById('m-seo').textContent = activeTask.seoKey || '—';
+  document.getElementById('m-why').textContent = activeTask.why || '—';
+  ['queue','work','done'].forEach(s => {
+    document.getElementById('sb-' + s).classList.toggle('active', activeTask.status === s);
+  });
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+function setStatus(status) {
+  if (!activeTask) return;
+  activeTask.status = status;
+  ['queue','work','done'].forEach(s => {
+    document.getElementById('sb-' + s).classList.toggle('active', s === status);
+  });
+  render();
+  updateStats();
+}
+
+loadTasks();
 </script>
 </body>
 </html>
