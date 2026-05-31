@@ -304,7 +304,7 @@ async function loadTasks() {
     const res = await fetch(WEBHOOK_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const buf = await res.arrayBuffer();
-    const text = new TextDecoder("windows-1252").decode(buf);
+    const text = new TextDecoder("utf-8").decode(buf);
     const data = JSON.parse(text);
     // SMM_Top: поле "1" содержит все задачи через \n, поля через ||
     // Формат: Заголовок||Тема||Аудитория||SEO-ключ||Приоритет||Почему важно
