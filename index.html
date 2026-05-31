@@ -302,7 +302,7 @@ async function loadTasks() {
     const res = await fetch(WEBHOOK_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const buf = await res.arrayBuffer();
-    const text = new TextDecoder("utf-8").decode(buf);
+    const text = new TextDecoder("windows-1252").decode(buf);
     const data = JSON.parse(text);
     tasks = data.map((t, i) => ({
       id: t['0'] || t.ID || t.id || i + 1,
