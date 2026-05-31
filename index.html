@@ -225,10 +225,12 @@ html, body {
 
   <div class="tabs" id="tabs">
     <div class="tab active" onclick="filterTasks('all',this)">Все</div>
-    <div class="tab" onclick="filterTasks('case',this)">Кейсы</div>
-    <div class="tab" onclick="filterTasks('social',this)">Соцсети</div>
-    <div class="tab" onclick="filterTasks('auto',this)">Автопост</div>
-    <div class="tab" onclick="filterTasks('urgent',this)">🔴 Срочно</div>
+    <div class="tab" onclick="filterTasks('urgent',this)">🔴 HIGH</div>
+    <div class="tab" onclick="filterTasks('Анатомия Движения',this)">Анатомия</div>
+    <div class="tab" onclick="filterTasks('Психосоматика',this)">Психосом.</div>
+    <div class="tab" onclick="filterTasks('Нейро-Биомеханика',this)">Нейро</div>
+    <div class="tab" onclick="filterTasks('Здоровье Суставов',this)">Суставы</div>
+    <div class="tab" onclick="filterTasks('Без боли рядом',this)">Локальные</div>
   </div>
 
   <div class="board-wrap">
@@ -304,17 +306,39 @@ async function loadTasks() {
     const buf = await res.arrayBuffer();
     const text = new TextDecoder("windows-1252").decode(buf);
     const data = JSON.parse(text);
-    tasks = data.map((t, i) => ({
-      id: t['0'] || t.ID || t.id || i + 1,
-      type: (t['2'] || t['Тип'] || t.type || 'social').toLowerCase(),
-      title: t['1'] || t['Заголовок'] || t.title || '(без названия)',
-      urgent: t['6'] === 'да' || t['Срочно'] === 'да' || t.urgent === 'да' || t.urgent === true,
-      status: (t['3'] || t['Статус'] || t.status || 'queue').toLowerCase(),
-      channels: t['4'] || t['Канал'] || t.channels || '',
-      audience: t['5'] || t['Аудитория'] || t.audience || 'Все',
-      seoKey: t['7'] || t['SEO-ключ'] || t.seoKey || '',
-      why: t['8'] || t['Почему важно'] || t.why || ''
-    }));
+    // SMM_Top: поле "1" содержит все задачи через \n, поля через ||
+    // Формат: Заголовок||Тема||Аудитория||SEO-ключ||Приоритет||Почему важно
+    tasks = [];
+    data.forEach((row, rowIdx) => {
+      const raw = row['1'] || row['0'] || '';
+      if (!raw || raw.match(/^\d{4}-\d{2}/)) return;
+      const lines = raw.split('\n').filter(l => l.trim());
+      lines.forEach((line, lineIdx) => {
+        const parts = line.split('||');
+        if (parts.length < 2) return;
+        const title = parts[0].trim();
+        const theme = parts[1] ? parts[1].trim() : '';
+        const audience = parts[2] ? parts[2].trim() : 'Все';
+        const seoKey = parts[3] ? parts[3].trim() : '';
+        const priority = parts[4] ? parts[4].trim() : 'MEDIUM';
+        const why = parts[5] ? parts[5].trim() : '';
+        const status = (row['2'] || 'queue').toLowerCase();
+        tasks.push({
+          id: rowIdx + '-' + lineIdx,
+          rowNum: row.__ROW_NUMBER__,
+          lineIdx: lineIdx,
+          type: 'social',
+          category: theme || 'Соцсети',
+          title: title,
+          urgent: priority === 'HIGH',
+          status: status,
+          channels: theme,
+          audience: audience,
+          seoKey: seoKey,
+          why: why
+        });
+      });
+    });
     render();
     updateStats();
   } catch(e) {
@@ -339,7 +363,7 @@ function setError(msg) {
 function getFiltered() {
   if (currentFilter === 'urgent') return tasks.filter(t => t.urgent);
   if (currentFilter === 'all') return tasks;
-  return tasks.filter(t => t.type === currentFilter);
+  return tasks.filter(t => t.category === currentFilter || t.audience === currentFilter);
 }
 
 function render() {
@@ -356,13 +380,12 @@ function render() {
 }
 
 function cardHTML(t) {
-  const typeLabel = t.type === 'auto' ? 'Автопост' : t.type === 'case' ? 'Кейс' : 'Соцсети';
-  const typeBadge = `<span class="badge badge-${t.type}">${typeLabel}</span>`;
-  const urgentBadge = t.urgent ? `<span class="badge badge-urgent">🔴 Срочно</span>` : '';
-  const channelBadge = t.channels ? `<span class="badge badge-channel">${t.channels}</span>` : '';
-  return `<div class="card" onclick="openModal(${t.id})">
+  const urgentBadge = t.urgent ? `<span class="badge badge-urgent">🔴 HIGH</span>` : `<span class="badge badge-social">MEDIUM</span>`;
+  const themeBadge = t.category ? `<span class="badge badge-channel">${t.category}</span>` : '';
+  const audienceBadge = t.audience ? `<span class="badge badge-case">${t.audience}</span>` : '';
+  return `<div class="card" onclick="openModal('${t.id}')">
     <div class="card-title">${t.title}</div>
-    <div class="card-meta">${typeBadge}${urgentBadge}${channelBadge}</div>
+    <div class="card-meta">${urgentBadge}${themeBadge}${audienceBadge}</div>
   </div>`;
 }
 
@@ -386,7 +409,7 @@ function openModal(id) {
   if (!activeTask) return;
   document.getElementById('m-title').textContent = activeTask.title;
   document.getElementById('m-type').textContent =
-    activeTask.type === 'auto' ? 'Автопост' : activeTask.type === 'case' ? 'Кейс' : 'Соцсети';
+    activeTask.category || 'Соцсети';
   document.getElementById('m-channels').textContent = activeTask.channels || '—';
   document.getElementById('m-audience').textContent = activeTask.audience || '—';
   document.getElementById('m-seo').textContent = activeTask.seoKey || '—';
